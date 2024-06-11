@@ -6,52 +6,11 @@ import AppMenuItem from './AppMenuItem.vue';
 const model = ref([
     {
         label: 'Home',
-        items: [{ label: 'Dashboard', icon: 'pi pi-fw pi-home', to: '/' }]
+        items: [{ label: 'Fidelidade', icon: 'pi pi-fw pi-home', to: '/' }]
     },
     {
         items: [
-            { label: 'Relatórios', icon: 'pi pi-book', to: '/uikit/table' },
-        ]
-    },
-    {
-        to: '/pages',
-        items: [
-            {
-                label: 'Advisor',
-                icon: 'pi pi-fw pi-user',
-                items: [
-                    {
-                        label: 'Lista de clientes',
-                        to: '/uikit/list'
-                    },
-                    {
-                        label: 'Cobrança',
-                        to: '/auth/error'
-                    },
-                    {
-                        label: 'Estatísticas',
-                        to: '/auth/access'
-                    }
-                ]
-            }
-        ]
-    },
-    {
-        items: [
-            {
-                label: 'Mensagens',
-                icon: 'pi pi-comment',
-                to: '/documentation'
-            }
-        ]
-    },
-    {
-        items: [
-            {
-                label: 'Ajuda',
-                icon: 'pi pi-question-circle',
-                to: '/icons'
-            }
+            { label: 'Agências de Turismo', icon: 'pi pi-book', to: '/uikit/table' },
         ]
     }
 ]);

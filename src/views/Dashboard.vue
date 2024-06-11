@@ -1,10 +1,9 @@
 <script setup>
-import { onMounted, reactive, ref, watch, onBeforeMount } from 'vue';
-import CustomerService from '@/service/CustomerService';
-import ProductService from '@/service/ProductService';
-import { useLayout } from '@/layout/composables/layout';
-import { FilterMatchMode, FilterOperator } from 'primevue/api';
+import { onMounted, ref } from 'vue';
 import axios from 'axios';
+import { useLayout } from '@/layout/composables/layout';
+import { FilterMatchMode } from 'primevue/api';
+import ProductService from '@/service/ProductService';
 
 const { isDarkTheme } = useLayout();
 
@@ -17,7 +16,7 @@ const dataCustodia = ref({
             fill: true,
             tension: 0.4,
             borderColor: '#87CEEB',
-            backgroundColor: 'rgba(135, 206, 235, 0.1)' 
+            backgroundColor: 'rgba(135, 206, 235, 0.1)'
         }
     ]
 });
@@ -39,12 +38,12 @@ onMounted(() => {
     chartDataPatrimonio.value = setChartDataPatrimonio();
     chartOptions.value = setChartOptions();
 
-    axios.get("https://run.mocky.io/v3/4eb5c95a-0e72-49f8-acee-e1a0b18aa33f")
+    axios.get("https://run.mocky.io/v3/3039ce6e-76a4-408e-bc39-765038e91639")
     .then((res) => {
         const data = res.data.data.advisor_summary;
         clienteCount.value = data.client_count;
         console.log(clienteCount.value);
-        patrimonioCustodia.value = formatCurrency(data.total_equity);
+        patrimonioCustodia.value = data.total_equity;
         patrimonioMedio.value = formatCurrency(data.average_equity);
         equityHistory.value = data.equity_history.map(entry => ({
             date_custodia: new Date(entry.date),
@@ -232,12 +231,59 @@ const resgateStyle = {
   padding: '0.5rem'
 };
 
+// Doughnut chart data and options
+const chartDataDoughnut = ref();
+const chartOptionsDoughnut = ref(null);
+
+const setChartDataDoughnut = () => {
+    const documentStyle = getComputedStyle(document.body);
+
+    return {
+        labels: ['A', 'B', 'C'],
+        datasets: [
+            {
+                data: [540, 325, 702],
+                backgroundColor: [
+                    documentStyle.getPropertyValue('--cyan-500'), 
+                    documentStyle.getPropertyValue('--orange-500'), 
+                    documentStyle.getPropertyValue('--gray-500')
+                ],
+                hoverBackgroundColor: [
+                    documentStyle.getPropertyValue('--cyan-400'), 
+                    documentStyle.getPropertyValue('--orange-400'), 
+                    documentStyle.getPropertyValue('--gray-400')
+                ]
+            }
+        ]
+    };
+};
+
+const setChartOptionsDoughnut = () => {
+    const documentStyle = getComputedStyle(document.documentElement);
+    const textColor = documentStyle.getPropertyValue('--text-color');
+
+    return {
+        plugins: {
+            legend: {
+                labels: {
+                    cutout: '60%',
+                    color: textColor
+                }
+            }
+        }
+    };
+};
+
+onMounted(() => {
+    chartDataDoughnut.value = setChartDataDoughnut();
+    chartOptionsDoughnut.value = setChartOptionsDoughnut();
+});
 </script>
 
 <style scoped>
 .chart-container {
     max-height: 100%; 
-    overflow-y: auto; /* Adiciona uma barra de rolagem vertical se necessário */
+    overflow-y: auto;
 }
 
 ::v-deep(.p-datatable-frozen-tbody) {
@@ -255,7 +301,7 @@ const resgateStyle = {
         <div class="card">
             <div class="flex justify-content-between mb-3">
                 <div>
-                    <span class="block text-900 font-medium mb-3">Clientes</span>
+                    <span class="block text-900 font-medium mb-3">Média de clientes por dia</span>
                 </div>
             </div>
             <div class="flex justify-content-between flex-column sm:flex-row">
@@ -268,7 +314,7 @@ const resgateStyle = {
         <div class="card">
             <div class="flex justify-content-between mb-3">
                 <div>
-                    <span class="block text-900 font-medium mb-3">Patrimônio Sob Custódia</span>
+                    <span class="block text-900 font-medium mb-3">Média de dias para retorno</span>
                 </div>
             </div>
             <div class="flex justify-content-between flex-column sm:flex-row">
@@ -281,7 +327,7 @@ const resgateStyle = {
         <div class="card">
             <div class="flex justify-content-between mb-3">
                 <div>
-                    <span class="block text-900 font-medium mb-3">Patrimônio Médio</span>
+                    <span class="block text-900 font-medium mb-3">Recompensas resgatadas</span>
                 </div>
             </div>
             <div class="flex justify-content-between flex-column sm:flex-row">
@@ -290,45 +336,30 @@ const resgateStyle = {
             </div>
         </div>
     </div>
-    <div class="col-12 xl:col-12">
-        <div class="card">
+    <div class="col-12 xl:col-6">
+        <div class="card" align="center">
             <div class="flex align-items-center justify-content-between mb-4">
                 <div class="flex align-items-center">
-                    <h5>Evolução de Patrimônio Médio Sob Custódia</h5>
+                    <h5>Total de clientes por categoria</h5>
                     <div class="ml-2" style="width: 4rem; height: 2rem">
                         <i class="pi pi-exclamation-circle"></i>
                     </div>
                 </div>
             </div>
-            <div class="chart-container" style="height: 350px;">
-                <Chart type="line" :data="dataCustodia" :options="chartOptionsCustodia" :style="{ height: chartHeight }"/>
-            </div>
+            <Chart type="doughnut" :data="chartDataDoughnut" :options="chartOptionsDoughnut" class="w-full md:w-20rem" />
         </div>
     </div>
     <div class="col-12 xl:col-6">
         <div class="card">
             <div class="flex align-items-center justify-content-between mb-4">
                 <div class="flex align-items-center">
-                    <h5>Carteiras por Corretora</h5>
+                    <h5>Pontos x  Categoria de Clientes</h5>
                     <div class="ml-2" style="width: 4rem; height: 2rem">
                         <i class="pi pi-exclamation-circle"></i>
                     </div>
                 </div>
             </div>
-            <Chart type="bar" :data="chartDataCarteira" :options="chartOptions" class="h-20rem"  />
-        </div>
-    </div>
-    <div class="col-12 xl:col-6">
-        <div class="card">
-            <div class="flex align-items-center justify-content-between mb-4">
-                <div class="flex align-items-center">
-                    <h5>Patrimônio por Corretora</h5>
-                    <div class="ml-2" style="width: 4rem; height: 2rem">
-                        <i class="pi pi-exclamation-circle"></i>
-                    </div>
-                </div>
-            </div>
-            <Chart type="bar" :data="chartDataPatrimonio" :options="chartOptions" class="h-20rem"  />
+            <Chart type="bar" :data="chartDataPatrimonio" :options="chartOptions" class="h-20rem" />
         </div>
     </div>
 </div>
@@ -361,9 +392,9 @@ const resgateStyle = {
                         {{ formatDate(data.date) }}
                         </template>
                     </Column>
-                    <Column field="value" header="Valor" style="min-width: 12rem">
+                    <Column field="value" header="Pontos" style="min-width: 12rem">
                         <template #body="{ data }">
-                        {{ formatCurrency(data.value) }}
+                        {{ data.value }}
                         </template>
                     </Column>
                     <Column field="type" header="Tipo" style="min-width: 12rem">
@@ -372,7 +403,7 @@ const resgateStyle = {
                                 :style="data.type.trim().toLowerCase() === 'aporte' ? aporteStyle : resgateStyle"
                                 :class="{ 'text-green-500': data.type.trim().toLowerCase() === 'aporte', 'text-500': data.type.trim().toLowerCase() === 'resgate' }"
                             >
-                                {{ data.type.trim().toLowerCase() === 'aporte' ? 'Aporte' : 'Resgate' }}
+                                {{ data.type.trim().toLowerCase() === 'aporte' ? 'Inclusão' : 'Resgate' }}
                             </span>
                         </template>
                     </Column>
