@@ -8,10 +8,10 @@
     top: 7rem;
     left: 2rem;
     transition: transform $transitionDuration, left $transitionDuration;
-    background-color: var(--surface-overlay);
-    border-radius: $borderRadius;
-    padding: 0.5rem 1.5rem;
-    box-shadow: 0px 3px 5px rgba(0, 0, 0, 0.02), 0px 0px 2px rgba(0, 0, 0, 0.05), 0px 1px 4px rgba(0, 0, 0, 0.08);
+    background-color: #e7e9ecad; /* Cor de fundo cinza claro */
+    border-radius: 10px; /* Ajustar o arredondamento dos cantos */
+    padding: 1rem 1.5rem; /* Ajuste de espaçamento interno */
+    box-shadow: 0px 3px 5px rgba(53, 51, 51, 0.02), 0px 0px 2px rgba(0, 0, 0, 0.05), 0px 1px 4px rgba(0, 0, 0, 0.08);
 }
 
 .layout-menu {
@@ -24,7 +24,7 @@
             font-size: 0.857rem;
             text-transform: uppercase;
             font-weight: 700;
-            color: var(--surface-900);
+            color: #4a4a4a !important; /* Força o cinza escuro */
             margin: 0.75rem 0;
         }
 
@@ -61,7 +61,7 @@
             align-items: center;
             position: relative;
             outline: 0 none;
-            color: var(--text-color);
+            color: #4a4a4a !important; /* Força o cinza escuro */
             cursor: pointer;
             padding: 0.75rem 1rem;
             border-radius: $borderRadius;
@@ -79,11 +79,12 @@
 
             &.active-route {
                 font-weight: 700;
-                color: var(--primary-color);
+                color: #4a4a4a !important; /* Força o cinza escuro */
             }
 
             &:hover {
-                background-color: var(--surface-hover);
+                background-color: #4a4a4a !important; /* Fundo cinza escuro */
+                color: #fff !important; /* Texto branco ao passar o mouse */
             }
 
             &:focus {
@@ -98,31 +99,37 @@
             li {
                 a {
                     margin-left: 1rem;
+                    color: #4a4a4a !important; /* Cor cinza escuro */
                 }
 
                 li {
                     a {
                         margin-left: 2rem;
+                        color: #4a4a4a !important; /* Cor cinza escuro */
                     }
 
                     li {
                         a {
                             margin-left: 2.5rem;
+                            color: #4a4a4a !important; /* Cor cinza escuro */
                         }
 
                         li {
                             a {
                                 margin-left: 3rem;
+                                color: #4a4a4a !important; /* Cor cinza escuro */
                             }
 
                             li {
                                 a {
                                     margin-left: 3.5rem;
+                                    color: #4a4a4a !important; /* Cor cinza escuro */
                                 }
 
                                 li {
                                     a {
                                         margin-left: 4rem;
+                                        color: #4a4a4a !important; /* Cor cinza escuro */
                                     }
                                 }
                             }
@@ -133,6 +140,7 @@
         }
     }
 }
+
 
 .layout-submenu-enter-from,
 .layout-submenu-leave-to {

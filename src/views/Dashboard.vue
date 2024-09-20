@@ -1,414 +1,255 @@
+<template>
+<div class="grid">
+    <!-- Card para a Análise de Arquivo -->
+    <div class="col-12 xl:col-3">
+        <div class="p-card">
+            <div class="p-card-body">
+                <div class="p-card-title">Análise de Arquivo</div>
+                <div class="divider"></div>
+                <div class="p-card-content">
+                    <i class="pi pi-upload"></i>
+                    <span class="upload-text">upload</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Card para o Código de Barras -->
+    <div class="col-12 xl:col-3">
+        <div class="p-card">
+            <div class="p-card-body">
+                <div class="p-card-title">Código de Barras</div>
+                <div class="divider"></div>
+                <div class="p-card-content">
+                    <i class="pi pi-upload"></i>
+                    <span class="upload-text">upload</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Card para o Cálculo de Tinta -->
+    <div class="col-12 xl:col-3">
+        <div class="p-card">
+            <div class="p-card-body">
+                <div class="p-card-title">Cálculo de Tinta</div>
+                <div class="divider"></div>
+                <div class="p-card-content">
+                    <i class="pi pi-upload"></i>
+                    <span class="upload-text">upload</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Card vazio -->
+    <div class="col-12 xl:col-3">
+        <div class="p-card">
+            <div class="p-card-body">
+                <div class="p-card-title"><br></div>
+                <div class="divider"></div>
+                <div class="p-card-content">
+                    <i class="pi pi-upload"></i>
+                    <span class="upload-text">upload</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="grid">
+    <div class="col-12">
+        <!-- DataTable para exibir as movimentações -->
+        <div class="card">
+            <DataTable 
+                v-model:filters="filters" 
+                :value="transactions" 
+                paginator 
+                :rows="10" 
+                dataKey="os" 
+                filterDisplay="row" 
+                :loading="loading"
+                :globalFilterFields="['os', 'entrega', 'cliente', 'titulo', 'fluxo', 'transporte', 'status']" 
+                :rowHover="true" 
+                v-model:selection="selectedOS" 
+                selectionMode="checkbox">
+                
+                <!-- Cabeçalho da tabela -->
+                <template #header>
+                    <div class="flex justify-content-between flex-column sm:flex-row">
+                        <div>
+                            <h5> Movimentações </h5>
+                            <h7 style="color: #808080;"> Lista das últimas movimentações </h7>
+                        </div>
+                        <span class="p-input-icon-left mb-2">
+                            <i class="pi pi-search" />
+                            <InputText v-model="filters['global'].value" placeholder="Pesquisar" style="width: 100%" />
+                        </span>
+                    </div>
+                </template>
+
+                <!-- Mensagem de tabela vazia -->
+                <template #empty> Nenhuma movimentação encontrada. </template>
+                
+                <!-- Mensagem de carregamento -->
+                <template #loading> Carregando dados das movimentações. Por favor, aguarde. </template>
+
+                <!-- Coluna de seleção múltipla -->
+                <Column selectionMode="multiple" headerStyle="width: 3em">
+                    <template #header>
+                        <div class="flex align-items-center">
+                            <!-- Checkbox para selecionar/desmarcar todos os itens -->
+                            <Checkbox 
+                                v-model:checked="selectedOS" 
+                                :indeterminate="selectedOS.length > 0 && selectedOS.length < transactions.length" 
+                                @change="selectAll()" />
+                            <span style="margin-left: 4px;"></span>
+                        </div>
+                    </template>
+                </Column>
+
+                <!-- Colunas da tabela com estilização dinâmica -->
+                <Column field="os" header="OS" style="min-width: 8rem">
+                    <template #body="{ data }">
+                        <div :style="getRowStyle(data.fluxo)">
+                            {{ data.os }}
+                        </div>
+                    </template>
+                </Column>
+                <Column field="entrega" header="Entrega" style="min-width: 10rem">
+                    <template #body="{ data }">
+                        <div :style="getRowStyle(data.fluxo)">
+                            {{ data.entrega }}
+                        </div>
+                    </template>
+                </Column>
+                <Column field="cliente" header="Cliente" style="min-width: 10rem">
+                    <template #body="{ data }">
+                        <div :style="getRowStyle(data.fluxo)">
+                            {{ data.cliente }}
+                        </div>
+                    </template>
+                </Column>
+                <Column field="titulo" header="Título" style="min-width: 20rem">
+                    <template #body="{ data }">
+                        <div :style="getRowStyle(data.fluxo)">
+                            {{ data.titulo }}
+                        </div>
+                    </template>
+                </Column>
+                <Column field="fluxo" header="Fluxo" style="min-width: 12rem">
+                    <template #body="{ data }">
+                        <div :style="getRowStyle(data.fluxo)">
+                            {{ data.fluxo }}
+                        </div>
+                    </template>
+                </Column>
+                <Column field="transporte" header="Transporte" style="min-width: 10rem">
+                    <template #body="{ data }">
+                        <div :style="getRowStyle(data.fluxo)">
+                            {{ data.transporte }}
+                        </div>
+                    </template>
+                </Column>
+                <Column field="status" header="Status" style="min-width: 10rem">
+                    <template #body="{ data }">
+                        <div :style="getRowStyle(data.fluxo)">
+                            {{ data.status }}
+                        </div>
+                    </template>
+                </Column>
+            </DataTable>
+        </div>
+    </div>
+</div>
+</template>
+
 <script setup>
 import { onMounted, ref } from 'vue';
-import axios from 'axios';
 import { useLayout } from '@/layout/composables/layout';
 import { FilterMatchMode } from 'primevue/api';
 import ProductService from '@/service/ProductService';
+import Checkbox from 'primevue/checkbox';
 
-const { isDarkTheme } = useLayout();
+const { isDarkTheme } = useLayout(); // Estado de tema escuro/claro do layout
 
-const dataCustodia = ref({
-    labels: [],
-    datasets: [
-        {
-            label: 'Valor',
-            data: [],
-            fill: true,
-            tension: 0.4,
-            borderColor: '#87CEEB',
-            backgroundColor: 'rgba(135, 206, 235, 0.1)'
-        }
-    ]
-});
-
-const products = ref(null);
-const clienteCount = ref(null);
-const patrimonioCustodia = ref(null);
-const patrimonioMedio = ref(null);
-const equityHistory = ref([]);
-
+const products = ref(null); // Dados dos produtos
+const clienteCount = ref(null); // Contagem de clientes
+const patrimonioCustodia = ref(null); // Patrimônio em custódia
+const patrimonioMedio = ref(null); // Patrimônio médio
+const equityHistory = ref([]); // Histórico de patrimônio
+const transactions = ref([]); // Transações/movimentações
+const selectedOS = ref([]); // Itens selecionados na tabela
 const filters = ref({
-  global: { value: null, matchMode: FilterMatchMode.CONTAINS }
+  global: { value: null, matchMode: FilterMatchMode.CONTAINS } // Filtro global para busca
 });
-const loading = ref(true);
+const loading = ref(true); // Indica se os dados estão sendo carregados
 
-onMounted(() => {
-    productService.getProductsSmall().then((data) => (products.value = data));
-    chartDataCarteira.value = setChartDataCarteira();
-    chartDataPatrimonio.value = setChartDataPatrimonio();
-    chartOptions.value = setChartOptions();
+const productService = new ProductService(); // Serviço para buscar produtos
 
-    axios.get("https://run.mocky.io/v3/835e2488-a16e-41d1-b568-04355c56629a")
-    .then((res) => {
-        const data = res.data.data.advisor_summary;
-        clienteCount.value = data.client_count;
-        console.log(clienteCount.value);
-        patrimonioCustodia.value = data.total_equity;
-        patrimonioMedio.value = formatCurrency(data.average_equity);
-        equityHistory.value = data.equity_history.map(entry => ({
-            date_custodia: new Date(entry.date),
-            value_custodia: entry.value
-        }));
-        transactions.value = transformTransactions(res.data.data.clients_summary);
-        loading.value = false;
-
-        // Atualizar dataCustodia com os dados obtidos
-        dataCustodia.value.labels = equityHistory.value.map(entry => formatDate(entry.date_custodia));
-        dataCustodia.value.datasets[0].data = equityHistory.value.map(entry => entry.value_custodia);
-        loading.value = false;
-    })
-    .catch((error) => {
-      console.log(error);
-      loading.value = false;
-    });
-});
-
+// Função para formatar a data para o padrão brasileiro
 const formatDate = (value) => {
-  return value.toLocaleDateString('en-US', {
+  return value.toLocaleDateString('pt-BR', {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric'
   });
 };
 
-const items = ref([
-    { label: 'Add New', icon: 'pi pi-fw pi-plus' },
-    { label: 'Remove', icon: 'pi pi-fw pi-minus' }
-]);
-const lineOptions = ref(null);
-const productService = new ProductService();
-
+// Função para formatar valores monetários para o formato BRL
 const formatCurrency = (value) => {
     return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 };
 
-const chartOptionsCustodia = ref({
-    plugins: {
-        legend: {
-            display: true,
-            position: 'top'
-        }
-    },
-    maintainAspectRatio: false,
-    responsive: true,
-    height: 350,
-    scales: {
-        y: {
-            grid: {
-                display: true,
-                drawBorder: false
-            },
-            ticks: {
-                callback: function(value, index, values) {
-                    return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-                }
-            }
-        },
-        x: {
-            grid: {
-                display: false,
-                drawBorder: false
-            }
-        }
-    }
-});
+// Dados fictícios para preencher a tabela
+const transactionsData = [
+  { os: '145582', entrega: '14/05/2019', cliente: 'Flexcor', titulo: 'Flexograv - Teste Sistema', fluxo: 'Conferência', transporte: 'Motoboy', status: 'Conferência' },
+  { os: '145583', entrega: '15/05/2019', cliente: 'Companhia ABC', titulo: 'Design Gráfico - Sistema XYZ', fluxo: 'Aguardando', transporte: 'Motoboy', status: 'Aguardando' },
+  { os: '145584', entrega: '16/05/2019', cliente: 'Empresa Testes', titulo: 'Projeto de Desenvolvimento', fluxo: 'Gravação', transporte: 'Motoboy', status: 'Gravação' },
+  { os: '145585', entrega: '17/05/2019', cliente: 'Tech Solutions', titulo: 'Análise de Software', fluxo: 'Gravação', transporte: 'Motoboy', status: 'Gravação' },
+  { os: '145586', entrega: '18/05/2019', cliente: 'Flexcorp', titulo: 'Implementação de Sistema', fluxo: 'Aguardando', transporte: 'Motoboy', status: 'Aguardando' },
+  { os: '145587', entrega: '19/05/2019', cliente: 'Digital Media', titulo: 'Criação de Website', fluxo: 'Financeiro', transporte: 'Motoboy', status: 'Financeiro' },
+];
 
-const chartHeight = '350px';
-
-const chartDataCarteira = ref();
-const chartDataPatrimonio = ref();
-const chartOptions = ref();
-
-const setChartDataCarteira = () => {
-    const documentStyle = getComputedStyle(document.documentElement);
-
-    return {
-        labels: ['C.A', 'C.B', 'C.C'],
-        datasets: [
-            {
-                label: 'Valor',
-                backgroundColor: documentStyle.getPropertyValue('--cyan-500'),
-                borderColor: documentStyle.getPropertyValue('--cyan-500'),
-                data: [45, 40, 10]
-            }
-        ]
-    };
-};
-
-const setChartDataPatrimonio = () => {
-    const documentStyle = getComputedStyle(document.documentElement);
-
-    return {
-        labels: ['C.A', 'C.B', 'C.C'],
-        datasets: [
-            {
-                label: 'Valor',
-                backgroundColor: documentStyle.getPropertyValue('--cyan-500'),
-                borderColor: documentStyle.getPropertyValue('--cyan-500'),
-                data: [30, 10, 10]
-            }
-        ]
-    };
-};
-
-const setChartOptions = () => {
-    const documentStyle = getComputedStyle(document.documentElement);
-    const textColor = documentStyle.getPropertyValue('--text-color');
-    const textColorSecondary = documentStyle.getPropertyValue('--text-color-secondary');
-    const surfaceBorder = documentStyle.getPropertyValue('--surface-border');
-
-    return {
-        indexAxis: 'y',
-        maintainAspectRatio: false,
-        aspectRatio: 0.8,
-        plugins: {
-            legend: {
-                labels: {
-                    color: textColor
-                }
-            }
-        },
-        scales: {
-            x: {
-                ticks: {
-                    color: textColorSecondary,
-                    font: {
-                        weight: 500
-                    },
-                    callback: function(value, index, values) {
-                    return value + 'mi';
-                    }
-                },
-                grid: {
-                    display: false,
-                    drawBorder: false
-                }
-            },
-            y: {
-                ticks: {
-                    color: textColorSecondary
-                },
-                grid: {
-                    color: surfaceBorder,
-                    drawBorder: false
-                }
-            }
-        }
-    };
-}
-
-const transactions = ref([]);
-
-const transformTransactions = (clients) => {
-  let transactions = [];
-  clients.forEach(client => {
-    if (client.latest_transactions && client.latest_transactions.length > 0) {
-      client.latest_transactions.forEach(transaction => {
-        transactions.push({
-          id: transaction.id,
-          name: client.name,
-          date: new Date(transaction.date),
-          value: transaction.value,
-          type: transaction.type
-        });
-      });
-    }
-  });
-  return transactions;
-};
-
-const aporteStyle = {
-  backgroundColor: 'var(--highlight-bg)',
-  color: 'var(--highlight-text-color)',
-  borderRadius: 'var(--border-radius)',
-  padding: '0.5rem'
-};
-
-const resgateStyle = {
-  backgroundColor: '#ffaca7',
-  color: '#ffaca7',
-  borderRadius: 'var(--border-radius)',
-  padding: '0.5rem'
-};
-
-// Doughnut chart data and options
-const chartDataDoughnut = ref();
-const chartOptionsDoughnut = ref(null);
-
-const setChartDataDoughnut = () => {
-    const documentStyle = getComputedStyle(document.body);
-
-    return {
-        labels: ['A', 'B', 'C'],
-        datasets: [
-            {
-                data: [540, 325, 702],
-                backgroundColor: [
-                    documentStyle.getPropertyValue('--cyan-500'), 
-                    documentStyle.getPropertyValue('--orange-500'), 
-                    documentStyle.getPropertyValue('--gray-500')
-                ],
-                hoverBackgroundColor: [
-                    documentStyle.getPropertyValue('--cyan-400'), 
-                    documentStyle.getPropertyValue('--orange-400'), 
-                    documentStyle.getPropertyValue('--gray-400')
-                ]
-            }
-        ]
-    };
-};
-
-const setChartOptionsDoughnut = () => {
-    const documentStyle = getComputedStyle(document.documentElement);
-    const textColor = documentStyle.getPropertyValue('--text-color');
-
-    return {
-        plugins: {
-            legend: {
-                labels: {
-                    cutout: '60%',
-                    color: textColor
-                }
-            }
-        }
-    };
-};
-
+// Função executada quando o componente é montado
 onMounted(() => {
-    chartDataDoughnut.value = setChartDataDoughnut();
-    chartOptionsDoughnut.value = setChartOptionsDoughnut();
+    // Preenchendo a tabela com dados fictícios
+    transactions.value = transactionsData;
+
+    // Buscando produtos do serviço (assíncrono)
+    productService.getProductsSmall().then((data) => (products.value = data));
+    loading.value = false; // Indicando que o carregamento terminou
 });
+
+// Função para aplicar estilos dinâmicos a cada tipo de fluxo
+const getRowStyle = (fluxo) => {
+  switch (fluxo) {
+    case 'Conferência':
+      return { backgroundColor: '#FFE699', color: '#4D4D4D', height: '20px', lineHeight: '20px' };
+    case 'Aguardando':
+      return { backgroundColor: '#99FFCC', color: '#4D4D4D', height: '20px', lineHeight: '20px' };
+    case 'Gravação':
+      return { backgroundColor: '#FFCCCC', color: '#4D4D4D', height: '20px', lineHeight: '20px' };
+    case 'Financeiro':
+      return { backgroundColor: '#ADD8E6', color: '#4D4D4D', height: '20px', lineHeight: '20px' };
+    default:
+      return { backgroundColor: 'white', color: '#4D4D4D', height: '20px', lineHeight: '20px' };
+  }
+};
+
+// Função para selecionar todos os itens da tabela
+const selectAll = () => {
+  if (selectedOS.value.length === transactions.value.length) {
+    selectedOS.value = [];
+  } else {
+    selectedOS.value = [...transactions.value];
+  }
+};
 </script>
 
 <style scoped>
-.chart-container {
-    max-height: 100%; 
-    overflow-y: auto;
+.p-datatable .p-datatable-tbody > tr > td {
+    padding: 0 !important; /* Remove o padding das células */
 }
 
-::v-deep(.p-datatable-frozen-tbody) {
-    font-weight: bold;
-}
-
-::v-deep(.p-datatable-scrollable .p-frozen-column) {
-    font-weight: bold;
+.p-datatable .p-datatable-tbody > tr > td > div {
+    padding: 0 !important; /* Remove o padding dos divs internos */
 }
 </style>
-
-<template>
-<div class="grid">
-    <div class="col-12 lg:col-6 xl:col-4">
-        <div class="card">
-            <div class="flex justify-content-between mb-3">
-                <div>
-                    <span class="block text-900 font-medium mb-3">Média de clientes por dia</span>
-                </div>
-            </div>
-            <div class="flex justify-content-between flex-column sm:flex-row">
-                <span class="text-900">{{ clienteCount }}</span>
-                <span style="background-color: var(--highlight-bg); color: var(--highlight-text-color); border-radius: var(--border-radius); padding: 0.25rem;" class="text-green-500 font-medium">+12%</span>
-            </div>
-        </div>
-    </div>
-    <div class="col-12 lg:col-6 xl:col-4">
-        <div class="card">
-            <div class="flex justify-content-between mb-3">
-                <div>
-                    <span class="block text-900 font-medium mb-3">Média de dias para retorno</span>
-                </div>
-            </div>
-            <div class="flex justify-content-between flex-column sm:flex-row">
-                <span class="text-900">{{ patrimonioCustodia }}</span>
-                <span style="background-color: var(--highlight-bg); color: var(--highlight-text-color); border-radius: var(--border-radius); padding: 0.25rem;" class="text-green-500 font-medium">+12%</span>
-            </div>
-        </div>
-    </div>
-    <div class="col-12 lg:col-6 xl:col-4">
-        <div class="card">
-            <div class="flex justify-content-between mb-3">
-                <div>
-                    <span class="block text-900 font-medium mb-3">Recompensas resgatadas</span>
-                </div>
-            </div>
-            <div class="flex justify-content-between flex-column sm:flex-row">
-                <span class="text-900">{{ patrimonioMedio }}</span>
-                <span style="background-color: #ffaca7; color: var(--highlight-text-color); border-radius: var(--border-radius); padding: 0.25rem;" class="text-500 font-medium">-5%</span>
-            </div>
-        </div>
-    </div>
-    <div class="col-12 xl:col-6">
-        <div class="card" align="center">
-            <div class="flex align-items-center justify-content-between mb-4">
-                <div class="flex align-items-center">
-                    <h5>Total de clientes por categoria</h5>
-                    <div class="ml-2" style="width: 4rem; height: 2rem">
-                        <i class="pi pi-exclamation-circle"></i>
-                    </div>
-                </div>
-            </div>
-            <Chart type="doughnut" :data="chartDataDoughnut" :options="chartOptionsDoughnut" class="w-full md:w-20rem" />
-        </div>
-    </div>
-    <div class="col-12 xl:col-6">
-        <div class="card">
-            <div class="flex align-items-center justify-content-between mb-4">
-                <div class="flex align-items-center">
-                    <h5>Pontos x  Categoria de Clientes</h5>
-                    <div class="ml-2" style="width: 4rem; height: 2rem">
-                        <i class="pi pi-exclamation-circle"></i>
-                    </div>
-                </div>
-            </div>
-            <Chart type="bar" :data="chartDataPatrimonio" :options="chartOptions" class="h-20rem" />
-        </div>
-    </div>
-</div>
-    <div class="grid">
-        <div class="col-12">
-            <div class="card">
-                <DataTable v-model:filters="filters" :value="transactions" paginator :rows="10" dataKey="id" filterDisplay="row" :loading="loading"
-                    :globalFilterFields="['name', 'date', 'value', 'type']" :rowHover="true">
-                    <template #header>
-                        <div class="flex justify-content-between flex-column sm:flex-row">
-                            <div>
-                                <h5> Movimentações </h5>
-                                <h7 style="color: #808080;"> Lista das últimas movimentações </h7>
-                            </div>
-                            <span class="p-input-icon-left mb-2">
-                                <i class="pi pi-search" />
-                                <InputText v-model="filters['global'].value" placeholder="Pesquisar" style="width: 100%" />
-                            </span>
-                        </div>
-                    </template>
-                    <template #empty> No transactions found. </template>
-                    <template #loading> Loading transaction data. Please wait. </template>
-                    <Column field="name" header="Nome" style="min-width: 12rem">
-                        <template #body="{ data }">
-                        {{ data.name }}
-                        </template>
-                    </Column>
-                    <Column field="date" header="Data" style="min-width: 12rem">
-                        <template #body="{ data }">
-                        {{ formatDate(data.date) }}
-                        </template>
-                    </Column>
-                    <Column field="value" header="Pontos" style="min-width: 12rem">
-                        <template #body="{ data }">
-                        {{ data.value }}
-                        </template>
-                    </Column>
-                    <Column field="type" header="Tipo" style="min-width: 12rem">
-                        <template #body="{ data }">
-                            <span 
-                                :style="data.type.trim().toLowerCase() === 'aporte' ? aporteStyle : resgateStyle"
-                                :class="{ 'text-green-500': data.type.trim().toLowerCase() === 'aporte', 'text-500': data.type.trim().toLowerCase() === 'resgate' }"
-                            >
-                                {{ data.type.trim().toLowerCase() === 'aporte' ? 'Inclusão' : 'Resgate' }}
-                            </span>
-                        </template>
-                    </Column>
-                </DataTable>
-            </div>
-        </div>
-    </div>
-</template>
